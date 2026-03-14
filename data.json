@@ -1,0 +1,49 @@
+{
+  "latestPrice": 82.50,
+  "openPrice": 81.00,
+  "highPrice": 83.20,
+  "lowPrice": 80.50,
+  "prevClose": 81.50,
+  "change": 1.00,
+  "changePercent": 1.23,
+  "volume": 125000,
+  "turnover": "10,312,500",
+  "updateTime": "2026-03-14 15:30:00",
+  "tradeStatus": "交易中",
+  "priceHistory": [
+    {"date": "03-08", "price": 79.50},
+    {"date": "03-09", "price": 80.20},
+    {"date": "03-10", "price": 81.00},
+    {"date": "03-11", "price": 80.80},
+    {"date": "03-12", "price": 81.50},
+    {"date": "03-13", "price": 82.00},
+    {"date": "03-14", "price": 82.50}
+  ],
+  "news": [
+    {
+      "title": "上海清算所调整上海碳配额远期保证金参数通知",
+      "date": "2026-02-12",
+      "url": "https://www.cneeex.com/c/2026-02-12/497390.shtml"
+    },
+    {
+      "title": "全国碳市场成交量突破新高度，上海环交所持续领跑",
+      "date": "2026-03-10",
+      "url": "https://www.cneeex.com/"
+    },
+    {
+      "title": "2026 年碳排放配额分配方案正式发布",
+      "date": "2026-03-05",
+      "url": "https://www.cneeex.com/"
+    },
+    {
+      "title": "上海环交所推出碳普惠新机制，鼓励企业参与碳交易",
+      "date": "2026-02-28",
+      "url": "https://www.cneeex.com/"
+    },
+    {
+      "title": "碳市场价格稳定上涨，市场流动性持续提升",
+      "date": "2026-02-20",
+      "url": "https://www.cneeex.com/"
+    }
+  ]
+}

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>上海环境能源交易所 - 碳配额行情数据</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .price-up { color: #10b981; }
+        .price-down { color: #ef4444; }
+        .animate-pulse-slow {
+            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="gradient-bg text-white">
+        <div class="container mx-auto px-4 py-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold mb-2">🌍 上海环境能源交易所</h1>
+                    <p class="text-purple-200">Shanghai Environment & Energy Exchange</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-purple-200 text-sm">数据更新时间</p>
+                    <p id="updateTime" class="text-lg font-semibold">加载中...</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Key Metrics -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-2xl p-6 shadow-lg card-hover">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-gray-500 text-sm">最新成交价</span>
+                    <span class="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-xs font-semibold">SHEA</span>
+                </div>
+                <p id="latestPrice" class="text-3xl font-bold text-gray-800">--</p>
+                <p id="priceChange" class="text-sm mt-2">--</p>
+            </div>
+
+            <div class="bg-white rounded-2xl p-6 shadow-lg card-hover">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-gray-500 text-sm">开盘价</span>
+                    <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                    </svg>
+                </div>
+                <p id="openPrice" class="text-2xl font-bold text-gray-800">--</p>
+                <p class="text-sm text-gray-500 mt-2">今日开盘</p>
+            </div>
+
+            <div class="bg-white rounded-2xl p-6 shadow-lg card-hover">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-gray-500 text-sm">最高价</span>
+                    <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+                    </svg>
+                </div>
+                <p id="highPrice" class="text-2xl font-bold text-gray-800">--</p>
+                <p class="text-sm text-gray-500 mt-2">日内最高</p>
+            </div>
+
+            <div class="bg-white rounded-2xl p-6 shadow-lg card-hover">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-gray-500 text-sm">最低价</span>
+                    <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                    </svg>
+                </div>
+                <p id="lowPrice" class="text-2xl font-bold text-gray-800">--</p>
+                <p class="text-sm text-gray-500 mt-2">日内最低</p>
+            </div>
+        </div>
+
+        <!-- Chart & Info -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Price Chart -->
+            <div class="lg:col-span-2 bg-white rounded-2xl p-6 shadow-lg">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">📈 价格走势</h2>
+                <canvas id="priceChart" height="120"></canvas>
+            </div>
+
+            <!-- Market Info -->
+            <div class="bg-white rounded-2xl p-6 shadow-lg">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">📊 市场概况</h2>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center py-3 border-b">
+                        <span class="text-gray-600">成交量</span>
+                        <span id="volume" class="font-semibold text-gray-800">--</span>
+                    </div>
+                    <div class="flex justify-between items-center py-3 border-b">
+                        <span class="text-gray-600">成交额</span>
+                        <span id="turnover" class="font-semibold text-gray-800">--</span>
+                    </div>
+                    <div class="flex justify-between items-center py-3 border-b">
+                        <span class="text-gray-600">涨跌幅</span>
+                        <span id="changePercent" class="font-semibold">--</span>
+                    </div>
+                    <div class="flex justify-between items-center py-3 border-b">
+                        <span class="text-gray-600">昨收价</span>
+                        <span id="prevClose" class="font-semibold text-gray-800">--</span>
+                    </div>
+                    <div class="flex justify-between items-center py-3">
+                        <span class="text-gray-600">交易状态</span>
+                        <span id="tradeStatus" class="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-600">交易中</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent News -->
+        <div class="mt-8 bg-white rounded-2xl p-6 shadow-lg">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">📰 最新动态</h2>
+            <div id="newsList" class="space-y-3">
+                <div class="animate-pulse-slow bg-gray-100 rounded-lg p-4">
+                    <p class="text-gray-400">数据加载中...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Source -->
+        <div class="mt-8 text-center text-gray-500 text-sm">
+            <p>数据来源：上海环境能源交易所 | 更新时间：每日 15:30</p>
+            <p class="mt-2">
+                <a href="https://www.cneeex.com/" target="_blank" class="text-blue-600 hover:underline">官方网站</a>
+                ·
+                <a href="https://github.com" target="_blank" class="text-blue-600 hover:underline">GitHub 源码</a>
+            </p>
+        </div>
+    </main>
+
+    <script>
+        // Load data
+        async function loadData() {
+            try {
+                const response = await fetch('data.json?t=' + Date.now());
+                const data = await response.json();
+                
+                // Update metrics
+                document.getElementById('latestPrice').textContent = data.latestPrice ? `¥${data.latestPrice}` : '--';
+                document.getElementById('openPrice').textContent = data.openPrice ? `¥${data.openPrice}` : '--';
+                document.getElementById('highPrice').textContent = data.highPrice ? `¥${data.highPrice}` : '--';
+                document.getElementById('lowPrice').textContent = data.lowPrice ? `¥${data.lowPrice}` : '--';
+                document.getElementById('volume').textContent = data.volume ? `${data.volume} 吨` : '--';
+                document.getElementById('turnover').textContent = data.turnover ? `¥${data.turnover}` : '--';
+                document.getElementById('prevClose').textContent = data.prevClose ? `¥${data.prevClose}` : '--';
+                
+                // Price change
+                const changeEl = document.getElementById('priceChange');
+                const changePercentEl = document.getElementById('changePercent');
+                if (data.change && data.changePercent) {
+                    const isUp = data.change >= 0;
+                    changeEl.textContent = `${isUp ? '+' : ''}${data.change} (${isUp ? '+' : ''}${data.changePercent}%)`;
+                    changeEl.className = `text-sm mt-2 ${isUp ? 'price-up' : 'price-down'}`;
+                    changePercentEl.textContent = `${isUp ? '+' : ''}${data.changePercent}%`;
+                    changePercentEl.className = `font-semibold ${isUp ? 'price-up' : 'price-down'}`;
+                }
+                
+                // Update time
+                document.getElementById('updateTime').textContent = data.updateTime || new Date().toLocaleString('zh-CN');
+                
+                // Chart
+                if (data.priceHistory && data.priceHistory.length > 0) {
+                    const ctx = document.getElementById('priceChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: data.priceHistory.map(d => d.date),
+                            datasets: [{
+                                label: '收盘价',
+                                data: data.priceHistory.map(d => d.price),
+                                borderColor: '#667eea',
+                                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                y: { beginAtZero: false }
+                            }
+                        }
+                    });
+                }
+                
+                // News
+                if (data.news && data.news.length > 0) {
+                    const newsList = document.getElementById('newsList');
+                    newsList.innerHTML = data.news.slice(0, 5).map(news => `
+                        <div class="py-3 border-b last:border-0 hover:bg-gray-50 rounded-lg px-3 -mx-3 transition-colors">
+                            <a href="${news.url}" target="_blank" class="block">
+                                <p class="text-gray-800 font-medium">${news.title}</p>
+                                <p class="text-gray-500 text-sm mt-1">${news.date}</p>
+                            </a>
+                        </div>
+                    `).join('');
+                }
+                
+            } catch (error) {
+                console.error('Load data error:', error);
+                document.getElementById('latestPrice').textContent = '加载失败';
+            }
+        }
+        
+        loadData();
+    </script>
+</body>
+</html>

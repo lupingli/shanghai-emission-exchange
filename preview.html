@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网站预览 - 上海环交所数据展示</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f3f4f6;
+            margin: 0;
+            padding: 20px;
+        }
+        .preview-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .preview-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .preview-header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+        .preview-header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+        .screenshot-frame {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .browser-bar {
+            background: #f1f3f4;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .dots {
+            display: flex;
+            gap: 6px;
+        }
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .dot-red { background: #ff5f56; }
+        .dot-yellow { background: #ffbd2e; }
+        .dot-green { background: #27c93f; }
+        .url-bar {
+            flex: 1;
+            margin-left: 16px;
+            background: white;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 13px;
+            color: #666;
+        }
+        .website-content {
+            padding: 0;
+        }
+        .website-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .website-header h1 {
+            margin: 0;
+            font-size: 32px;
+        }
+        .website-header .subtitle {
+            opacity: 0.9;
+            margin-top: 8px;
+        }
+        .website-header .update-time {
+            text-align: right;
+        }
+        .website-header .update-time .label {
+            opacity: 0.8;
+            font-size: 14px;
+        }
+        .website-header .update-time .value {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 4px;
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            padding: 30px;
+        }
+        .metric-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .metric-card .label {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .metric-card .tag {
+            background: #dbeafe;
+            color: #2563eb;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .metric-card .value {
+            font-size: 36px;
+            font-weight: bold;
+            color: #1f2937;
+        }
+        .metric-card .change {
+            margin-top: 8px;
+            font-size: 14px;
+            color: #10b981;
+        }
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            padding: 0 30px 30px 30px;
+        }
+        .chart-section {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 24px;
+        }
+        .chart-section h2 {
+            margin: 0 0 20px 0;
+            font-size: 20px;
+            color: #1f2937;
+        }
+        .chart-placeholder {
+            height: 250px;
+            background: linear-gradient(180deg, #f9fafb 0%, #ffffff 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #9ca3af;
+        }
+        .info-section {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 24px;
+        }
+        .info-section h2 {
+            margin: 0 0 20px 0;
+            font-size: 20px;
+            color: #1f2937;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 16px 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        .info-row .label {
+            color: #6b7280;
+        }
+        .info-row .value {
+            font-weight: 600;
+            color: #1f2937;
+        }
+        .news-section {
+            padding: 0 30px 30px 30px;
+        }
+        .news-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 24px;
+        }
+        .news-card h2 {
+            margin: 0 0 20px 0;
+            font-size: 20px;
+            color: #1f2937;
+        }
+        .news-item {
+            padding: 16px 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        .news-item:last-child {
+            border-bottom: none;
+        }
+        .news-item .title {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 6px;
+        }
+        .news-item .date {
+            font-size: 13px;
+            color: #9ca3af;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #9ca3af;
+            font-size: 13px;
+        }
+        .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="preview-container">
+        <div class="preview-header">
+            <h1>🖼️ 网站预览效果</h1>
+            <p>上海环境能源交易所 - 碳配额行情数据展示网站</p>
+        </div>
+
+        <div class="screenshot-frame">
+            <div class="browser-bar">
+                <div class="dots">
+                    <div class="dot dot-red"></div>
+                    <div class="dot dot-yellow"></div>
+                    <div class="dot dot-green"></div>
+                </div>
+                <div class="url-bar">
+                    🔒 yourname.github.io/shanghai-emission-exchange
+                </div>
+            </div>
+
+            <div class="website-content">
+                <!-- Website Header -->
+                <div class="website-header">
+                    <div>
+                        <h1>🌍 上海环境能源交易所</h1>
+                        <p class="subtitle">Shanghai Environment & Energy Exchange</p>
+                    </div>
+                    <div class="update-time">
+                        <p class="label">数据更新时间</p>
+                        <p class="value">2026-03-14 15:30:00</p>
+                    </div>
+                </div>
+
+                <!-- Metrics Grid -->
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="label">
+                            <span>最新成交价</span>
+                            <span class="tag">SHEA</span>
+                        </div>
+                        <div class="value">¥82.50</div>
+                        <div class="change">↑ +1.00 (+1.23%)</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="label">
+                            <span>开盘价</span>
+                            <span style="font-size: 20px;">📈</span>
+                        </div>
+                        <div class="value">¥81.00</div>
+                        <div style="color: #6b7280; font-size: 14px; margin-top: 8px;">今日开盘</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="label">
+                            <span>最高价</span>
+                            <span style="font-size: 20px;">🔺</span>
+                        </div>
+                        <div class="value">¥83.20</div>
+                        <div style="color: #6b7280; font-size: 14px; margin-top: 8px;">日内最高</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="label">
+                            <span>最低价</span>
+                            <span style="font-size: 20px;">🔻</span>
+                        </div>
+                        <div class="value">¥80.50</div>
+                        <div style="color: #6b7280; font-size: 14px; margin-top: 8px;">日内最低</div>
+                    </div>
+                </div>
+
+                <!-- Main Content -->
+                <div class="main-content">
+                    <div class="chart-section">
+                        <h2>📈 价格走势</h2>
+                        <div class="chart-placeholder">
+                            <div style="text-align: center;">
+                                <div style="font-size: 48px; margin-bottom: 10px;">📊</div>
+                                <div>Chart.js 价格趋势图</div>
+                                <div style="font-size: 13px; margin-top: 8px;">显示最近 7 天收盘价走势</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-section">
+                        <h2>📊 市场概况</h2>
+                        <div class="info-row">
+                            <span class="label">成交量</span>
+                            <span class="value">125,000 吨</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">成交额</span>
+                            <span class="value">¥10,312,500</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">涨跌幅</span>
+                            <span class="value" style="color: #10b981;">+1.23%</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">昨收价</span>
+                            <span class="value">¥81.50</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">交易状态</span>
+                            <span class="value" style="background: #d1fae5; color: #059669; padding: 4px 12px; border-radius: 12px; font-size: 12px;">交易中</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- News Section -->
+                <div class="news-section">
+                    <div class="news-card">
+                        <h2>📰 最新动态</h2>
+                        <div class="news-item">
+                            <div class="title">上海清算所调整上海碳配额远期保证金参数通知</div>
+                            <div class="date">2026-02-12</div>
+                        </div>
+                        <div class="news-item">
+                            <div class="title">全国碳市场成交量突破新高度，上海环交所持续领跑</div>
+                            <div class="date">2026-03-10</div>
+                        </div>
+                        <div class="news-item">
+                            <div class="title">2026 年碳排放配额分配方案正式发布</div>
+                            <div class="date">2026-03-05</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="footer">
+                    数据来源：上海环境能源交易所 | 更新时间：每日 15:30
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center;">
+            <p style="color: #6b7280; margin-bottom: 10px;">觉得效果怎么样？满意的话就可以部署到 GitHub 了！</p>
+            <a href="#" class="btn" onclick="alert('请告诉用户：如果满意，提供 GitHub 用户名和访问令牌即可部署！'); return false;">✅ 确认部署到 GitHub</a>
+        </div>
+    </div>
+</body>
+</html>
