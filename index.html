@@ -136,18 +136,34 @@
             </div>
         </div>
 
+        <!-- Real-time Status -->
+        <div class="mt-8 bg-blue-50 border border-blue-200 rounded-2xl p-4 text-center">
+            <div class="flex items-center justify-center gap-2 mb-2">
+                <span class="relative flex h-3 w-3">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+                </span>
+                <span class="text-blue-700 font-semibold">实时数据更新中</span>
+            </div>
+            <p class="text-blue-600 text-sm">每 5 秒自动刷新 | 下次更新：<span id="countdown">5</span>秒</p>
+        </div>
+
         <!-- Data Source -->
         <div class="mt-8 text-center text-gray-500 text-sm">
-            <p>数据来源：上海环境能源交易所 | 更新时间：每日 15:30</p>
+            <p>数据来源：上海环境能源交易所 | 实时行情</p>
             <p class="mt-2">
                 <a href="https://www.cneeex.com/" target="_blank" class="text-blue-600 hover:underline">官方网站</a>
                 ·
-                <a href="https://github.com" target="_blank" class="text-blue-600 hover:underline">GitHub 源码</a>
+                <a href="https://github.com/lupingli/shanghai-emission-exchange" target="_blank" class="text-blue-600 hover:underline">GitHub 源码</a>
             </p>
         </div>
     </main>
 
     <script>
+        let priceChart = null;
+        let refreshCountdown = 5;
+        let countdownInterval = null;
+
         // Load data
         async function loadData() {
             try {
@@ -180,29 +196,41 @@
                 // Chart
                 if (data.priceHistory && data.priceHistory.length > 0) {
                     const ctx = document.getElementById('priceChart').getContext('2d');
-                    new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: data.priceHistory.map(d => d.date),
-                            datasets: [{
-                                label: '收盘价',
-                                data: data.priceHistory.map(d => d.price),
-                                borderColor: '#667eea',
-                                backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                                tension: 0.4,
-                                fill: true
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            plugins: {
-                                legend: { display: false }
+                    
+                    if (priceChart) {
+                        // Update existing chart
+                        priceChart.data.labels = data.priceHistory.map(d => d.date);
+                        priceChart.data.datasets[0].data = data.priceHistory.map(d => d.price);
+                        priceChart.update('none');
+                    } else {
+                        // Create new chart
+                        priceChart = new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: data.priceHistory.map(d => d.date),
+                                datasets: [{
+                                    label: '收盘价',
+                                    data: data.priceHistory.map(d => d.price),
+                                    borderColor: '#667eea',
+                                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                                    tension: 0.4,
+                                    fill: true
+                                }]
                             },
-                            scales: {
-                                y: { beginAtZero: false }
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    legend: { display: false }
+                                },
+                                scales: {
+                                    y: { beginAtZero: false }
+                                },
+                                animation: {
+                                    duration: 500
+                                }
                             }
-                        }
-                    });
+                        });
+                    }
                 }
                 
                 // News
@@ -218,13 +246,46 @@
                     `).join('');
                 }
                 
+                // Flash effect on update
+                document.body.style.transition = 'background-color 0.3s';
+                document.body.style.backgroundColor = '#eff6ff';
+                setTimeout(() => {
+                    document.body.style.backgroundColor = '#f9fafb';
+                }, 300);
+                
             } catch (error) {
                 console.error('Load data error:', error);
                 document.getElementById('latestPrice').textContent = '加载失败';
             }
         }
         
+        // Countdown timer
+        function startCountdown() {
+            refreshCountdown = 5;
+            document.getElementById('countdown').textContent = refreshCountdown;
+            
+            if (countdownInterval) clearInterval(countdownInterval);
+            
+            countdownInterval = setInterval(() => {
+                refreshCountdown--;
+                document.getElementById('countdown').textContent = refreshCountdown;
+                
+                if (refreshCountdown <= 0) {
+                    clearInterval(countdownInterval);
+                    loadData();
+                    startCountdown();
+                }
+            }, 1000);
+        }
+        
+        // Initial load
         loadData();
+        startCountdown();
+        
+        // Auto refresh every 5 seconds
+        setInterval(() => {
+            loadData();
+        }, 5000);
     </script>
 </body>
 </html>
